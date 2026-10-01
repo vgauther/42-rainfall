@@ -1,0 +1,26 @@
+void p(void)
+{
+    char buffer[64];
+    unsigned int ret;
+
+    fflush(stdout);
+
+    gets(buffer);
+
+    ret = (unsigned int)__builtin_return_address(0);
+
+    if ((ret & 0xb0000000) == 0xb0000000)
+    {
+        printf("(%p)\n", (void *)ret);
+        _exit(1);
+    }
+
+    puts(buffer);
+    strdup(buffer);
+}
+
+int main(void)
+{
+    p();
+    return 0;
+}

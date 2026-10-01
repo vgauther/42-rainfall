@@ -1,0 +1,58 @@
+/* bonus0.c  —  reconstructed from disassembly */
+
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+/*
+ * String at 0x80486a0, printed as a prompt before each read.
+ * Confirm the exact text with: (gdb) x/s 0x80486a0
+ */
+#define PROMPT " - "
+
+/*
+ * Reads one line from stdin into a large local buffer, cuts it at the
+ * newline, then copies the first 20 bytes into `dst`.
+ *
+ * BUG: strncpy(dst, buf, 20) copies exactly 20 bytes and does NOT
+ * null-terminate when the input is >= 20 chars.
+ */
+char *p(char *dst, char *sep)
+{
+    char buf[4104];                 /* ebp-0x1008 */
+
+    puts(sep);                      /* print the prompt */
+    read(0, buf, 4096);             /* read up to 4096 bytes (no null added) */
+    *strchr(buf, '\n') = '\0';      /* terminate the line at the newline */
+    return strncpy(dst, buf, 20);   /* 0x14 bytes, not null-terminated if full */
+}
+
+/*
+ * Reads two short strings, concatenates them into `dst` separated by a space.
+ *
+ * BUG: b1 and b2 are adjacent on the stack, exactly 20 bytes apart, and
+ * neither is null-terminated by p(). So strcpy(dst, b1) walks straight
+ * from b1 into b2 and copies 40 bytes into dst, then strcat appends more.
+ * `dst` is a small buffer in main -> stack overflow.
+ */
+void pp(char *dst)
+{
+    char b1[20];                    /* ebp-0x30 */
+    char b2[20];                    /* ebp-0x1c  (b1 + 20) */
+
+    p(b1, PROMPT);
+    p(b2, PROMPT);
+
+    strcpy(dst, b1);                /* copies b1 AND b2 (no null between them) */
+    strcat(dst, " ");              /* 2-byte literal " " at 0x80486a4 */
+    strcat(dst, b2);
+}
+
+int main(void)
+{
+    char buf[40];                   /* esp+0x16, ~40 bytes before saved EIP */
+
+    pp(buf);                        /* fills buf, overflowing it */
+    puts(buf);
+    return 0;
+}

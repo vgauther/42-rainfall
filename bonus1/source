@@ -1,0 +1,23 @@
+/* bonus1.c  —  reconstructed from disassembly */
+
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+int main(int argc, char **argv)
+{
+    int   n;            /* esp+0x3c */
+    char  buf[40];      /* esp+0x14 ; situé juste 40 octets avant n */
+
+    n = atoi(argv[1]);
+
+    if (n > 9)                        /* cmpl $0x9 ; jle  -> comparaison SIGNÉE */
+        return 1;
+
+    memcpy(buf, argv[2], n * 4);      /* taille = n*4, calculée en 32 bits puis passée en size_t */
+
+    if (n == 0x574f4c46)             /* 0x574f4c46 == "FLOW" (little-endian) */
+        execl("/bin/sh", "/bin/sh", NULL);
+
+    return 0;
+}

@@ -1,0 +1,27 @@
+int main(int argc, char **argv)
+{
+    char *path;
+    char *args[2];
+    gid_t egid;
+    uid_t euid;
+
+    if (atoi(argv[1]) == 423) /* 0x1a7 == 423 */
+    {
+        path = strdup("/bin/sh");
+        args[0] = path;
+        args[1] = NULL;
+
+        egid = getegid();
+        euid = geteuid();
+
+        setresgid(egid, egid, egid);
+        setresuid(euid, euid, euid);
+
+        execv(path, args);
+    }
+    else
+    {
+        fprintf(stdout, "%.5s\n", "Wrong");
+    }
+    return (0);
+}

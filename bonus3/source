@@ -1,0 +1,33 @@
+/* bonus3.c  —  reconstructed from disassembly */
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int main(int argc, char **argv)
+{
+    char  buf[132];      /* esp+0x18, zeroed */
+    FILE *fp;
+
+    fp = fopen("/home/user/end/.pass", "r");   /* 0x80486f2 = path, 0x80486f0 = "r" */
+
+    if (fp == NULL || argc != 2)
+        return -1;
+
+    fread(buf, 1, 66, fp);          /* read the pass into buf[0..65] */
+    buf[65] = 0;                     /* movb $0,0x59(esp) -> buf[65] = '\0' */
+
+    /* BUG: user-controlled index, writes a NUL wherever atoi(argv[1]) points */
+    buf[atoi(argv[1])] = 0;         /* movb $0,0x18(esp,eax,1) */
+
+    fread(buf + 66, 1, 65, fp);     /* read the rest into buf[66..130] */
+    fclose(fp);
+
+    if (strcmp(buf, argv[1]) == 0)              /* buf == argv[1] ? */
+        execl("/bin/sh", "sh", NULL);           /* 0x804870a="/bin/sh", 0x8048707="sh" */
+    else
+        puts(buf + 66);
+
+    return 0;
+}

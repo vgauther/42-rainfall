@@ -1,0 +1,34 @@
+char c[68]; /* buffer global, contiendra le .pass de level8 */
+
+void m(void)
+{
+    printf("%s - %d\n", c, (int)time(0));
+}
+
+typedef struct s_list
+{
+    int             value;
+    struct s_list   *next;
+}   t_list;
+
+int main(int ac, char **av)
+{
+    t_list *a;
+    t_list *b;
+
+    a = malloc(sizeof(t_list));
+    a->value = 1;
+    a->next = malloc(8);
+
+    b = malloc(sizeof(t_list));
+    b->value = 2;
+    b->next = malloc(8);
+
+    strcpy((char *)a->next, av[1]);
+    strcpy((char *)b->next, av[2]);
+
+    fgets(c, 68, fopen("/home/user/level8/.pass", "r"));
+    puts("~~");
+
+    return (0);
+}
